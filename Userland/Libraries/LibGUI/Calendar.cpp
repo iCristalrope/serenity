@@ -6,6 +6,7 @@
  */
 
 #include <AK/DateConstants.h>
+#include <LibConfig/Client.h>
 #include <LibCore/DateTime.h>
 #include <LibGUI/Calendar.h>
 #include <LibGUI/Painter.h>
@@ -26,6 +27,10 @@ Calendar::Calendar(Core::DateTime date_time, Mode mode)
     : m_selected_date(date_time)
     , m_mode(mode)
 {
+    Vector<String> const weekday_names = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+    auto first_day_of_week = Config::read_string("Calendar"sv, "view"sv, "FirstDayOfWeek"sv, "Sunday"sv);
+    m_first_day_of_week = weekday_names.find_first_index(first_day_of_week).release_value();
+
     set_fill_with_background_color(true);
 
     for (int i = 0; i < 7; i++) {
