@@ -128,6 +128,7 @@ private:
     Gfx::IntSize m_event_size;
     Gfx::IntSize m_month_size[12];
     Mode m_mode { Month };
+    unsigned m_first_day_of_week { 0 }; // Sunday = 0; Saturday = 6
 };
 
 }
