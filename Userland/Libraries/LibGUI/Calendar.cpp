@@ -6,6 +6,7 @@
  */
 
 #include <AK/DateConstants.h>
+#include <LibConfig/Client.h>
 #include <LibCore/DateTime.h>
 #include <LibGUI/Calendar.h>
 #include <LibGUI/Painter.h>
@@ -26,6 +27,9 @@ Calendar::Calendar(Core::DateTime date_time, Mode mode)
     : m_selected_date(date_time)
     , m_mode(mode)
 {
+    auto first_day_of_week = Config::read_string("Calendar"sv, "view"sv, "FirstDayOfWeek"sv, "Sunday"sv);
+    m_first_day_of_week = first_day_of_week_index(first_day_of_week);
+
     set_fill_with_background_color(true);
 
     for (int i = 0; i < 7; i++) {
@@ -39,6 +43,14 @@ Calendar::Calendar(Core::DateTime date_time, Mode mode)
             Tile tile;
             m_tiles[i].append(move(tile));
         }
+    }
+
+    auto default_view = Config::read_string("Calendar"sv, "view"sv, "DefaultView"sv, "Month"sv);
+    if (default_view == "year") {
+        m_mode = Year;
+        m_show_days = false;
+        m_show_year = true;
+        m_show_month_year = true;
     }
 
     update_tiles(m_selected_date.year(), m_selected_date.month());
@@ -734,6 +746,21 @@ void Calendar::doubleclick_event(GUI::MouseEvent& event)
                     on_tile_doubleclick();
             }
         }
+    }
+}
+
+unsigned Calendar::first_day_of_week_index(String const& day_name) const
+{
+    Vector<String> const weekday_names = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+    return weekday_names.find_first_index(day_name).release_value();
+}
+
+void Calendar::config_string_did_change(String const& domain, String const& group, String const& key, String const& value)
+{
+    VERIFY(domain == "Calendar");
+    if (group == "view" && key == "FirstDayOfWeek") {
+        m_first_day_of_week = first_day_of_week_index(value);
+        update_tiles(m_view_year, m_view_month);
     }
 }
 }
