@@ -27,9 +27,8 @@ Calendar::Calendar(Core::DateTime date_time, Mode mode)
     : m_selected_date(date_time)
     , m_mode(mode)
 {
-    Vector<String> const weekday_names = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
     auto first_day_of_week = Config::read_string("Calendar"sv, "view"sv, "FirstDayOfWeek"sv, "Sunday"sv);
-    m_first_day_of_week = weekday_names.find_first_index(first_day_of_week).release_value();
+    m_first_day_of_week = first_day_of_week_index(first_day_of_week);
 
     set_fill_with_background_color(true);
 
@@ -747,6 +746,21 @@ void Calendar::doubleclick_event(GUI::MouseEvent& event)
                     on_tile_doubleclick();
             }
         }
+    }
+}
+
+unsigned Calendar::first_day_of_week_index(String const& day_name) const
+{
+    Vector<String> const weekday_names = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+    return weekday_names.find_first_index(day_name).release_value();
+}
+
+void Calendar::config_string_did_change(String const& domain, String const& group, String const& key, String const& value)
+{
+    VERIFY(domain == "Calendar");
+    if (group == "view" && key == "FirstDayOfWeek") {
+        m_first_day_of_week = first_day_of_week_index(value);
+        update_tiles(m_view_year, m_view_month);
     }
 }
 }
