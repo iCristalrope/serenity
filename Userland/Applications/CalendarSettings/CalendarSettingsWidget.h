@@ -19,8 +19,11 @@ public:
 private:
     CalendarSettingsWidget();
     Vector<String> const m_weekday_names = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+    Vector<String> const m_view_modes = { "Month", "Year" };
 
     String m_first_day_of_week { "Sunday"sv };
+    String m_default_view { "Month"sv };
 
     RefPtr<GUI::ComboBox> m_first_day_of_week_combobox;
+    RefPtr<GUI::ComboBox> m_default_view_combobox;
 };
