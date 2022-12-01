@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "AddEventDialog.h"
+#include "EventDialog.h"
 #include <Applications/Calendar/CalendarWindowGML.h>
 #include <LibConfig/Client.h>
 #include <LibCore/System.h>
@@ -79,7 +79,7 @@ ErrorOr<int> serenity_main(Main::Arguments arguments)
     });
 
     auto add_event_action = GUI::Action::create("&Add Event", {}, TRY(Gfx::Bitmap::try_load_from_file("/res/icons/16x16/add-event.png"sv)), [&](const GUI::Action&) {
-        AddEventDialog::show(calendar->selected_date(), window);
+        EventDialog::show(calendar->selected_date(), window);
     });
 
     auto jump_to_action = GUI::Action::create("Jump to &Today", {}, TRY(Gfx::Bitmap::try_load_from_file("/res/icons/16x16/calendar-date.png"sv)), [&](const GUI::Action&) {
@@ -121,7 +121,7 @@ ErrorOr<int> serenity_main(Main::Arguments arguments)
     (void)TRY(toolbar->try_add_action(open_settings_action));
 
     calendar->on_tile_doubleclick = [&] {
-        AddEventDialog::show(calendar->selected_date(), window);
+        EventDialog::show(calendar->selected_date(), window);
     };
 
     calendar->on_month_click = [&] {
@@ -131,7 +131,7 @@ ErrorOr<int> serenity_main(Main::Arguments arguments)
     auto& file_menu = window->add_menu("&File");
     file_menu.add_action(GUI::Action::create("&Add Event", { Mod_Ctrl | Mod_Shift, Key_E }, TRY(Gfx::Bitmap::try_load_from_file("/res/icons/16x16/add-event.png"sv)),
         [&](const GUI::Action&) {
-            AddEventDialog::show(calendar->selected_date(), window);
+            EventDialog::show(calendar->selected_date(), window);
         }));
     file_menu.add_action(open_settings_action);
 

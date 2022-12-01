@@ -6,7 +6,7 @@ serenity_component(
 compile_gml(CalendarWindow.gml CalendarWindowGML.h calendar_window_gml)
 
 set(SOURCES
-    AddEventDialog.cpp
+    EventDialog.cpp
     main.cpp
 )
 

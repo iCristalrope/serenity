@@ -12,19 +12,19 @@
 #include <LibGUI/Model.h>
 #include <LibGUI/Window.h>
 
-class AddEventDialog final : public GUI::Dialog {
-    C_OBJECT(AddEventDialog)
+class EventDialog final : public GUI::Dialog {
+    C_OBJECT(EventDialog)
 public:
-    virtual ~AddEventDialog() override = default;
+    virtual ~EventDialog() override = default;
 
     static void show(Core::DateTime date_time, Window* parent_window = nullptr)
     {
-        auto dialog = AddEventDialog::construct(date_time, parent_window);
+        auto dialog = EventDialog::construct(date_time, parent_window);
         dialog->exec();
     }
 
 private:
-    AddEventDialog(Core::DateTime date_time, Window* parent_window = nullptr);
+    EventDialog(Core::DateTime date_time, Window* parent_window = nullptr);
 
     class MonthListModel final : public GUI::Model {
     public:

@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "AddEventDialog.h"
+#include "EventDialog.h"
 #include <LibCore/DateTime.h>
 #include <LibGUI/BoxLayout.h>
 #include <LibGUI/Button.h>
@@ -19,7 +19,7 @@
 #include <LibGfx/Color.h>
 #include <LibGfx/Font/FontDatabase.h>
 
-AddEventDialog::AddEventDialog(Core::DateTime date_time, Window* parent_window)
+EventDialog::EventDialog(Core::DateTime date_time, Window* parent_window)
     : Dialog(parent_window)
     , m_date_time(date_time)
 {
@@ -113,17 +113,17 @@ AddEventDialog::AddEventDialog(Core::DateTime date_time, Window* parent_window)
     event_title_textbox.set_focus(true);
 }
 
-int AddEventDialog::MonthListModel::row_count(const GUI::ModelIndex&) const
+int EventDialog::MonthListModel::row_count(const GUI::ModelIndex&) const
 {
     return 12;
 }
 
-int AddEventDialog::MeridiemListModel::row_count(const GUI::ModelIndex&) const
+int EventDialog::MeridiemListModel::row_count(const GUI::ModelIndex&) const
 {
     return 2;
 }
 
-String AddEventDialog::MonthListModel::column_name(int column) const
+String EventDialog::MonthListModel::column_name(int column) const
 {
     switch (column) {
     case Column::Month:
@@ -133,7 +133,7 @@ String AddEventDialog::MonthListModel::column_name(int column) const
     }
 }
 
-String AddEventDialog::MeridiemListModel::column_name(int column) const
+String EventDialog::MeridiemListModel::column_name(int column) const
 {
     switch (column) {
     case Column::Meridiem:
@@ -143,7 +143,7 @@ String AddEventDialog::MeridiemListModel::column_name(int column) const
     }
 }
 
-GUI::Variant AddEventDialog::MonthListModel::data(const GUI::ModelIndex& index, GUI::ModelRole role) const
+GUI::Variant EventDialog::MonthListModel::data(const GUI::ModelIndex& index, GUI::ModelRole role) const
 {
     constexpr Array short_month_names = {
         "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -162,7 +162,7 @@ GUI::Variant AddEventDialog::MonthListModel::data(const GUI::ModelIndex& index, 
     return {};
 }
 
-GUI::Variant AddEventDialog::MeridiemListModel::data(const GUI::ModelIndex& index, GUI::ModelRole role) const
+GUI::Variant EventDialog::MeridiemListModel::data(const GUI::ModelIndex& index, GUI::ModelRole role) const
 {
     constexpr Array meridiem_names = {
         "AM", "PM"
