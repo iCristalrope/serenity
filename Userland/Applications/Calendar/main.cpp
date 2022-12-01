@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2020, Ryan Grieb <ryan.m.grieb@gmail.com>
+ * Copyright (c) 2022, Olivier De Cannière <olivier.decanniere96@gmail.com>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -14,7 +15,6 @@
 #include <LibGUI/BoxLayout.h>
 #include <LibGUI/Calendar.h>
 #include <LibGUI/Icon.h>
-#include <LibGUI/Menu.h>
 #include <LibGUI/Menubar.h>
 #include <LibGUI/Process.h>
 #include <LibGUI/Toolbar.h>
@@ -45,8 +45,8 @@ ErrorOr<int> serenity_main(Main::Arguments arguments)
     auto main_widget = TRY(window->try_set_main_widget<GUI::Widget>());
     main_widget->load_from_gml(calendar_window_gml);
 
-    auto toolbar = main_widget->find_descendant_of_type_named<GUI::Toolbar>("toolbar");
-    auto calendar = main_widget->find_descendant_of_type_named<GUI::Calendar>("calendar");
+    auto* toolbar = main_widget->find_descendant_of_type_named<GUI::Toolbar>("toolbar");
+    auto* calendar = main_widget->find_descendant_of_type_named<GUI::Calendar>("calendar");
 
     auto prev_date_action = GUI::Action::create({}, TRY(Gfx::Bitmap::try_load_from_file("/res/icons/16x16/go-back.png"sv)), [&](const GUI::Action&) {
         unsigned view_month = calendar->view_month();
@@ -121,7 +121,7 @@ ErrorOr<int> serenity_main(Main::Arguments arguments)
     (void)TRY(toolbar->try_add_action(open_settings_action));
 
     calendar->on_tile_doubleclick = [&] {
-        EventDialog::show(calendar->selected_date(), window);
+        add_event_action->activate();
     };
 
     calendar->on_month_click = [&] {
@@ -129,10 +129,7 @@ ErrorOr<int> serenity_main(Main::Arguments arguments)
     };
 
     auto& file_menu = window->add_menu("&File");
-    file_menu.add_action(GUI::Action::create("&Add Event", { Mod_Ctrl | Mod_Shift, Key_E }, TRY(Gfx::Bitmap::try_load_from_file("/res/icons/16x16/add-event.png"sv)),
-        [&](const GUI::Action&) {
-            EventDialog::show(calendar->selected_date(), window);
-        }));
+    file_menu.add_action(add_event_action);
     file_menu.add_action(open_settings_action);
 
     TRY(file_menu.try_add_separator());
