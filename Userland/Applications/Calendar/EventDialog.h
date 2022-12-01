@@ -13,13 +13,14 @@
 #include <LibGUI/Dialog.h>
 #include <LibGUI/Model.h>
 #include <LibGUI/Window.h>
+#include <LibSQL/SQLClient.h>
 
 class EventDialog final : public GUI::Dialog {
     C_OBJECT(EventDialog)
 public:
     virtual ~EventDialog() override = default;
 
-    static void show(Core::DateTime date_time, Window* parent_window = nullptr);
+    static void show(RefPtr<SQL::SQLClient>, Core::DateTime, Window* parent_window = nullptr);
 
 private:
     EventDialog(Core::DateTime date_time, Window* parent_window = nullptr);

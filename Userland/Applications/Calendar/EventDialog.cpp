@@ -68,10 +68,6 @@ EventDialog::EventDialog(Core::DateTime date_time, Window* parent_window)
     m_title_textbox->on_change = [this]() { m_ok_button->set_enabled(!m_title_textbox->text().is_empty()); };
 
     m_ok_button->on_click = [this](auto) {
-        // FIXME: Save created event
-        auto title = m_title_textbox->text();
-        auto date_time = Core::DateTime::create(m_year_spinbox->value(), m_month_combobox->selected_index() + 1, m_day_spinbox->value(), m_hour_spinbox->value(), m_minute_spinbox->value());
-        dbgln("TODO save event '{}' at {}", title, date_time.to_string());
         done(GUI::Dialog::ExecResult::OK);
     };
     m_cancel_button->on_click = [this](auto) {
@@ -79,8 +75,21 @@ EventDialog::EventDialog(Core::DateTime date_time, Window* parent_window)
     };
 }
 
-void EventDialog::show(Core::DateTime date_time, GUI::Window* parent_window)
+void EventDialog::show(RefPtr<SQL::SQLClient> sql_client, Core::DateTime date_time, GUI::Window* parent_window)
 {
     auto dialog = EventDialog::construct(date_time, parent_window);
-    dialog->exec();
+    if (dialog->exec() == GUI::Dialog::ExecResult::OK) {
+        auto title = dialog->m_title_textbox->text();
+        auto description = dialog->m_description_editor->text();
+        auto color = dialog->m_event_color_input->color();
+        auto color_rgb = (color.red() << 16) | (color.green() << 8) | color.blue();
+        auto event_date_time = Core::DateTime::create(dialog->m_year_spinbox->value(), dialog->m_month_combobox->selected_index() + 1, dialog->m_day_spinbox->value(), dialog->m_hour_spinbox->value(), dialog->m_minute_spinbox->value());
+
+        auto connection_id = sql_client->connect("CalendarEvents");
+        // FIXME: Remedy possible SQL injection
+        auto statement_text = String::formatted("INSERT INTO Calendar.Events(Title, Description, Color, DateTime) VALUES ('{}', '{}', {}, '{}');", title, description, color_rgb, event_date_time.to_string());
+        auto statement_id = sql_client->sql_statement(connection_id, statement_text);
+        sql_client->async_statement_execute(statement_id);
+        sql_client->async_disconnect(connection_id);
+    }
 }

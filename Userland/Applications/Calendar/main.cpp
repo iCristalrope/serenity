@@ -20,12 +20,25 @@
 #include <LibGUI/Toolbar.h>
 #include <LibGUI/Window.h>
 #include <LibMain/Main.h>
+#include <LibSQL/SQLClient.h>
+
+void ensure_database(auto sql_client)
+{
+    auto connection_id = sql_client->connect("CalendarEvents");
+    auto schema_statement_id = sql_client->sql_statement(connection_id, "CREATE SCHEMA Calendar;");
+    sql_client->async_statement_execute(schema_statement_id);
+    auto table_statement_id = sql_client->sql_statement(connection_id, "CREATE TABLE Calendar.Events(Title text, Description text, Color integer, DateTime text);");
+    sql_client->async_statement_execute(table_statement_id);
+    sql_client->async_disconnect(connection_id);
+}
 
 ErrorOr<int> serenity_main(Main::Arguments arguments)
 {
     TRY(Core::System::pledge("stdio recvfd sendfd rpath proc exec unix"));
 
     auto app = TRY(GUI::Application::try_create(arguments));
+    auto sql_client = TRY(SQL::SQLClient::try_create());
+    ensure_database(sql_client);
 
     Config::pledge_domain("Calendar");
     Config::monitor_domain("Calendar");
@@ -79,7 +92,7 @@ ErrorOr<int> serenity_main(Main::Arguments arguments)
     });
 
     auto add_event_action = GUI::Action::create("&Add Event", {}, TRY(Gfx::Bitmap::try_load_from_file("/res/icons/16x16/add-event.png"sv)), [&](const GUI::Action&) {
-        EventDialog::show(calendar->selected_date(), window);
+        EventDialog::show(sql_client, calendar->selected_date(), window);
     });
 
     auto jump_to_action = GUI::Action::create("Jump to &Today", {}, TRY(Gfx::Bitmap::try_load_from_file("/res/icons/16x16/calendar-date.png"sv)), [&](const GUI::Action&) {
