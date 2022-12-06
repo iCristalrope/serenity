@@ -511,6 +511,25 @@ void Calendar::paint_event(GUI::PaintEvent& event)
                 } else {
                     painter.draw_text(text_rect, display_date, font(), text_alignment, palette().base_text());
                 }
+
+                if (m_events) {
+                    auto tile = m_tiles[0][i];
+                    auto tile_date = Core::DateTime::create(tile.year, tile.month, tile.day);
+                    for (auto const& calendar_event : *m_events) {
+                        auto event_date = calendar_event.date_time;
+                        if (tile_date.year() == event_date.year() && tile_date.month() == event_date.month() && tile_date.day() == event_date.day()) {
+                            dbgln("SAAAAAAAAAAAAMEEE: {}", calendar_event.title);
+                            auto event_rect = tile_rect.shrunken(font().glyph_height() + 4, 4, 0, 4);
+                            event_rect.set_height(small_font->glyph_height() + 8);
+                            auto event_color_rect = event_rect.take_from_left(4);
+                            auto event_text_rect = event_rect.shrunken(0, 4, 0, 4);
+                            painter.fill_rect(event_rect, Color::LightGray);
+                            painter.fill_rect(event_color_rect, calendar_event.color);
+                            painter.draw_text(event_text_rect, calendar_event.title, *small_font, Gfx::TextAlignment::CenterLeft, palette().base_text(), Gfx::TextElision::Right);
+                        }
+                    }
+                }
+
                 i++;
             }
         }

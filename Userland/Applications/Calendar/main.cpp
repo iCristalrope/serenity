@@ -32,6 +32,14 @@ void ensure_database(auto sql_client)
     sql_client->async_disconnect(connection_id);
 }
 
+void lookup_events(const auto& sql_client)
+{
+    auto connection_id = sql_client->connect("CalendarEvents");
+    auto statement_id = sql_client->sql_statement(connection_id, "SELECT * FROM Calendar.Events ORDER BY DateTime;");
+    sql_client->async_statement_execute(statement_id);
+    // TODO DEBUG sql_client->async_disconnect(connection_id);
+}
+
 ErrorOr<int> serenity_main(Main::Arguments arguments)
 {
     TRY(Core::System::pledge("stdio recvfd sendfd rpath proc exec unix"));
@@ -60,6 +68,36 @@ ErrorOr<int> serenity_main(Main::Arguments arguments)
 
     auto* toolbar = main_widget->find_descendant_of_type_named<GUI::Toolbar>("toolbar");
     auto* calendar = main_widget->find_descendant_of_type_named<GUI::Calendar>("calendar");
+    NonnullRefPtrVector<GUI::Calendar::CalendarEvent> events;
+    calendar->set_events(&events);
+
+    sql_client->on_execution_error = [](int, int, String const& msg) {
+        dbgln("Error: {}", msg);
+    };
+    sql_client->on_execution_success = [&events, &sql_client](int, bool, int created, int deleted, int updated){
+        if (created != 0 || deleted != 0 || updated != 0) {
+            lookup_events(sql_client); // TODO DEBUG
+            return;
+        }
+
+        events.clear();
+    };
+    sql_client->on_next_result = [&events](int, Vector<String> const& values) {
+        dbgln("{} - {} - {} - {}", values[0], values[1], values[2], values[3]);
+
+        const auto& title = values[0];
+        const auto& description = values[1];
+        const auto color = Color::from_rgb(values[2].to_uint().release_value());
+        const auto date_time = Core::DateTime::parse("%Y-%m-%d %H:%M:%S"sv, values[3]).release_value();
+        events.append(GUI::Calendar::CalendarEvent::construct(title, description, color, date_time));
+
+        dbgln("Color int: {}", values[2].to_uint().release_value());
+        dbgln("Color: {}", color);
+    };
+    sql_client->on_results_exhausted = [&calendar](int, int){
+        dbgln("end of results");
+        calendar->update_tiles(calendar->view_year(), calendar->view_month());
+    };
 
     auto prev_date_action = GUI::Action::create({}, TRY(Gfx::Bitmap::try_load_from_file("/res/icons/16x16/go-back.png"sv)), [&](const GUI::Action&) {
         unsigned view_month = calendar->view_month();
@@ -158,6 +196,8 @@ ErrorOr<int> serenity_main(Main::Arguments arguments)
     auto help_menu = TRY(window->try_add_menu("&Help"));
     TRY(help_menu->try_add_action(GUI::CommonActions::make_command_palette_action(window)));
     TRY(help_menu->try_add_action(GUI::CommonActions::make_about_action("Calendar", app_icon, window)));
+
+    lookup_events(sql_client); // TODO DEBUG
 
     window->show();
     app->exec();

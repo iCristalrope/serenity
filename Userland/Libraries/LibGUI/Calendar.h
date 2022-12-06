@@ -22,6 +22,21 @@ class Calendar final
     C_OBJECT(Calendar)
 
 public:
+    struct CalendarEvent : public Core::Object {
+        C_OBJECT(CalendarEvent)
+        CalendarEvent(const String title, const String description, const Color color, const Core::DateTime date_time)
+            : title(title)
+            , description(description)
+            , color(color)
+            , date_time(date_time)
+        {}
+
+        String title;
+        String description;
+        Color color;
+        Core::DateTime date_time;
+    };
+
     enum Mode {
         Month,
         Year
@@ -63,6 +78,8 @@ public:
 
     void set_show_days_of_the_week(bool b) { m_show_days = b; }
     bool is_showing_days_of_the_week() const { return m_show_days; }
+
+    void set_events(NonnullRefPtrVector<CalendarEvent>* events) { m_events = events; }
 
     Gfx::IntSize unadjusted_tile_size() const { return m_unadjusted_tile_size; }
     void set_unadjusted_tile_size(int width, int height)
@@ -153,6 +170,8 @@ private:
     DayOfWeek m_first_day_of_week { DayOfWeek::Sunday };
     DayOfWeek m_first_day_of_weekend { DayOfWeek::Saturday };
     int m_weekend_length { 2 };
+
+    NonnullRefPtrVector<CalendarEvent>* m_events = nullptr;
 };
 
 }
